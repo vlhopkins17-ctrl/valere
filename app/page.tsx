@@ -16,7 +16,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col w-full max-w-xl py-12 mx-auto stretch px-4">
-      <h1 className="text-2xl font-bold mb-6">Muse — Personal Memory Agent</h1>
+      <h1 className="text-2xl font-bold mb-6">Valere — AI Fitness & Nutrition Coach</h1>
 
       <div className="space-y-4 mb-24">
         {messages.map((m) => (
@@ -61,7 +61,7 @@ export default function ChatPage() {
           disabled={status !== 'ready'}
           className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg disabled:opacity-50"
         >
-          Sendtt
+          Send
         </button>
       </form>
     </div>
