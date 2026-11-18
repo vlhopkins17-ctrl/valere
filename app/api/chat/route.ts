@@ -12,11 +12,10 @@ export async function POST(req: Request) {
   const mcpServerDir = path.resolve(process.cwd(), '../fitness-mcp');
 
   const mcpClient = await createMCPClient({
-    transport: new Experimental_StdioMCPTransport({
-      command: 'node',
-      args: ['--import', 'tsx', 'src/index.ts'],
-      cwd: mcpServerDir,
-    }),
+    transport: {
+      type: 'http',
+      url: process.env.FITNESS_MCP_URL!,
+    },
   });
 
   try {
