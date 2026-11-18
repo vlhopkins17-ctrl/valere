@@ -5,6 +5,8 @@ import { Experimental_StdioMCPTransport } from '@ai-sdk/mcp/mcp-stdio';
 import { memoryTools } from '@/lib/ai/memory-tools';
 import path from 'path';
 
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json();
 
