@@ -68,6 +68,10 @@ export async function POST(req: Request) {
         ...hitlTools,
       },
       stopWhen: stepCountIs(8),
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: 'valere-coach-agent',
+      },
       onFinish: async () => {
         await mcpClient.close();
       },
