@@ -1,9 +1,11 @@
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { LangfuseSpanProcessor } from '@langfuse/otel';
 
+export const langfuseSpanProcessor = new LangfuseSpanProcessor();
+
 export function register() {
   const sdk = new NodeSDK({
-    spanProcessors: [new LangfuseSpanProcessor()],
+    spanProcessors: [langfuseSpanProcessor],
   });
   sdk.start();
 }

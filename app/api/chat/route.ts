@@ -3,6 +3,7 @@ import { streamText, convertToModelMessages, stepCountIs, tool, UIMessage } from
 import { createMCPClient } from '@ai-sdk/mcp';
 import { memoryTools } from '@/lib/ai/memory-tools';
 import { z } from 'zod';
+import { langfuseSpanProcessor } from '@/instrumentation';
 
 export const maxDuration = 60;
 
@@ -74,6 +75,7 @@ export async function POST(req: Request) {
       },
       onFinish: async () => {
         await mcpClient.close();
+        await langfuseSpanProcessor.forceFlush();
       },
     });
 
