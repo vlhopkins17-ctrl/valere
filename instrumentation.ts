@@ -1,7 +1,11 @@
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { LangfuseSpanProcessor } from '@langfuse/otel';
 
-export const langfuseSpanProcessor = new LangfuseSpanProcessor();
+export const langfuseSpanProcessor = new LangfuseSpanProcessor({
+  publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+  secretKey: process.env.LANGFUSE_SECRET_KEY,
+  baseUrl: process.env.LANGFUSE_BASE_URL || process.env.LANGFUSE_BASEURL || 'https://langfuse.com',
+});
 
 export function register() {
   const sdk = new NodeSDK({
