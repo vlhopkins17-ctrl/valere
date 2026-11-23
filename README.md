@@ -5,6 +5,26 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### Authentication
+
+Users sign up and sign in with email and password at `/signup` and `/login`. Meals, workouts, and memories are stored with a `user_id` and every query is filtered by the signed-in user (see `lib/auth` and `lib/fitness-data.ts`).
+
+Set a session secret of at least 32 characters in `.env.local` and in your deployment environment:
+
+```bash
+SESSION_PASSWORD=$(node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))")
+```
+
+**Upgrading an existing database** (data logged before auth existed): run the one-time migration, which creates an owner account and assigns all existing rows to it:
+
+```bash
+node --env-file=.env.local scripts/migrate-add-users.mjs you@example.com
+```
+
+For a fresh database, `npx drizzle-kit push` is enough.
+
+### Development server
+
 First, run the development server:
 
 ```bash

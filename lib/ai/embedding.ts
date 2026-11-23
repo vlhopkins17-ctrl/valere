@@ -3,7 +3,7 @@
 
 import { embed } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { cosineDistance, desc, gt, sql } from 'drizzle-orm';
+import { and, cosineDistance, desc, eq, gt, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { memories } from '@/db/schema';
 
@@ -18,7 +18,7 @@ export async function generateEmbedding(value: string): Promise<number[]> {
   return embedding;
 }
 
-export async function findRelevantMemories(userQuery: string) {
+export async function findRelevantMemories(userId: string, userQuery: string) {
   const userQueryEmbedded = await generateEmbedding(userQuery);
 
   // Calculate cosine similarity (1 - cosineDistance)
@@ -30,7 +30,7 @@ export async function findRelevantMemories(userQuery: string) {
   const similarMemories = await db
     .select({ content: memories.content, similarity })
     .from(memories)
-    .where(gt(similarity, 0.5)) // Only return reasonably relevant matches
+    .where(and(eq(memories.userId, userId), gt(similarity, 0.5))) // Only this user's, reasonably relevant matches
     .orderBy((t) => desc(t.similarity))
     .limit(5);
 

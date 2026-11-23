@@ -1,7 +1,9 @@
 import { openai } from '@ai-sdk/openai';
-import { streamText, convertToModelMessages, stepCountIs, tool, UIMessage } from 'ai';
+import { streamText, convertToModelMessages, stepCountIs, tool, UIMessage, type ToolSet } from 'ai';
 import { createMCPClient } from '@ai-sdk/mcp';
-import { memoryTools } from '@/lib/ai/memory-tools';
+import { createMemoryTools } from '@/lib/ai/memory-tools';
+import { createFitnessTools } from '@/lib/ai/fitness-tools';
+import { getCurrentUser } from '@/lib/auth';
 import { z } from 'zod';
 import { langfuseSpanProcessor } from '@/instrumentation';
 
@@ -9,6 +11,11 @@ export const maxDuration = 60;
 
 export async function POST(req: Request) {
   let mcpClient: Awaited<ReturnType<typeof createMCPClient>> | undefined;
+
+  const user = await getCurrentUser();
+  if (!user) {
+    return Response.json({ error: 'You need to sign in to chat.' }, { status: 401 });
+  }
 
   try {
     const { messages }: { messages: UIMessage[] } = await req.json();
@@ -31,8 +38,13 @@ export async function POST(req: Request) {
 
     const allMcpTools = await client.tools();
 
-    // Keep read-only lookup tools from MCP; replace direct write tools with HITL confirmation cards
-    const { log_meal, log_workout, ...readOnlyFitnessTools } = allMcpTools;
+    // Only take the stateless nutrition lookup from MCP. Its log_* and get_* tools
+    // read and write the shared tables without a user filter, so writes go
+    // through HITL confirmation cards and reads use user-scoped local tools.
+    const externalTools: ToolSet = {};
+    if (allMcpTools.lookup_nutrition_facts) {
+      externalTools.lookup_nutrition_facts = allMcpTools.lookup_nutrition_facts;
+    }
 
     const hitlTools = {
       confirm_meal_log: tool({
@@ -75,8 +87,9 @@ export async function POST(req: Request) {
       - Use 'get_daily_macros' and 'get_recent_workouts' to check totals and suggest progressive overload.`,
       messages: await convertToModelMessages(messages),
       tools: {
-        ...memoryTools,
-        ...readOnlyFitnessTools,
+        ...createMemoryTools(user.id),
+        ...createFitnessTools(user.id),
+        ...externalTools,
         ...hitlTools,
       },
       stopWhen: stepCountIs(8),

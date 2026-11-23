@@ -106,6 +106,9 @@ body {
 
 .valere-nav-right {
   justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .valere-avatar {
@@ -564,5 +567,126 @@ body {
   .valere-glance-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+/* Authentication */
+.valere-auth {
+  width: min(100%, 400px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36px 32px 28px;
+  border: 1px solid var(--separator);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.valere-auth-logo {
+  width: auto;
+  height: 34px;
+  margin-bottom: 20px;
+}
+
+.valere-auth-title {
+  margin-bottom: 24px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.valere-auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.valere-auth-label {
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.valere-auth-input {
+  height: 44px;
+  margin-bottom: 16px;
+  padding: 0 14px;
+  border: 1px solid var(--separator);
+  border-radius: 12px;
+  outline: 0;
+  color: var(--text);
+  background: var(--elevated);
+  font: inherit;
+  font-size: 15px;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.valere-auth-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--glow);
+}
+
+.valere-auth-error {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1px solid #d88a83;
+  border-radius: 10px;
+  color: #842d27;
+  background: #fff3f1;
+  font-size: 13px;
+}
+
+.valere-auth-submit {
+  height: 44px;
+  border: 0;
+  border-radius: 22px;
+  color: var(--accent-contrast);
+  background: var(--accent);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+}
+
+.valere-auth-submit:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.valere-auth-submit:focus-visible,
+.valere-auth-switch a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.valere-auth-switch {
+  margin-top: 20px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.valere-auth-switch a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .valere-auth-error {
+    border-color: #783f3a;
+    color: #ffd5d1;
+    background: #2b1918;
+  }
+}
+
+@media (max-width: 640px) {
+  .valere-auth {
+    padding: 28px 20px 24px;
   }
 }

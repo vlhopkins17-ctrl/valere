@@ -1,63 +1,49 @@
 'use server';
 
-import { neon } from '@neondatabase/serverless';
+import { z } from 'zod';
+import { requireUser } from '@/lib/auth';
+import {
+  countTodayWorkouts,
+  getTodayMacros,
+  insertMeal,
+  insertWorkout,
+} from '@/lib/fitness-data';
 
-const sql = neon(process.env.DATABASE_URL!);
+// Server Actions are public endpoints: validate input and take the owner from
+// the session, never from the client payload.
+const mealSchema = z.object({
+  foodName: z.string().trim().min(1).max(200),
+  calories: z.number().int().min(0).max(20000),
+  proteinGrams: z.number().min(0).max(2000),
+  carbsGrams: z.number().min(0).max(2000),
+  fatGrams: z.number().min(0).max(2000),
+  mealType: z.string().trim().max(50).optional(),
+});
 
-export async function saveConfirmedMeal(data: {
-  foodName: string;
-  calories: number;
-  proteinGrams: number;
-  carbsGrams: number;
-  fatGrams: number;
-  mealType?: string;
-}) {
-  const rows = await sql`
-    INSERT INTO meals (food_name, calories, protein_grams, carbs_grams, fat_grams, meal_type)
-    VALUES (${data.foodName}, ${data.calories}, ${data.proteinGrams}, ${data.carbsGrams}, ${data.fatGrams}, ${data.mealType ?? null})
-    RETURNING id, food_name, calories, protein_grams
-  `;
-  return rows[0];
+const workoutSchema = z.object({
+  exercise: z.string().trim().min(1).max(200),
+  sets: z.number().int().min(0).max(1000),
+  reps: z.number().int().min(0).max(10000),
+  weightLbs: z.number().min(0).max(5000).optional(),
+  durationMinutes: z.number().int().min(0).max(1440).optional(),
+  notes: z.string().max(2000).optional(),
+});
+
+export async function saveConfirmedMeal(data: z.input<typeof mealSchema>) {
+  const user = await requireUser();
+  return insertMeal(user.id, mealSchema.parse(data));
 }
 
-export async function saveConfirmedWorkout(data: {
-  exercise: string;
-  sets: number;
-  reps: number;
-  weightLbs?: number;
-  durationMinutes?: number;
-  notes?: string;
-}) {
-  const rows = await sql`
-    INSERT INTO workouts (exercise, sets, reps, weight_lbs, duration_minutes, notes)
-    VALUES (${data.exercise}, ${data.sets}, ${data.reps}, ${data.weightLbs ?? null}, ${data.durationMinutes ?? null}, ${data.notes ?? null})
-    RETURNING id, exercise, sets, reps, weight_lbs
-  `;
-  return rows[0];
+export async function saveConfirmedWorkout(data: z.input<typeof workoutSchema>) {
+  const user = await requireUser();
+  return insertWorkout(user.id, workoutSchema.parse(data));
 }
 
 export async function getDailySummary() {
-  const [macroRow] = await sql`
-    SELECT
-      COALESCE(SUM(calories), 0)::int AS calories,
-      COALESCE(SUM(protein_grams), 0)::float AS protein,
-      COALESCE(SUM(carbs_grams), 0)::float AS carbs,
-      COALESCE(SUM(fat_grams), 0)::float AS fat
-    FROM meals
-    WHERE logged_at >= CURRENT_DATE
-  `;
-
-  const [workoutRow] = await sql`
-    SELECT COUNT(*)::int AS count
-    FROM workouts
-    WHERE logged_at >= CURRENT_DATE
-  `;
-
-  return {
-    calories: macroRow?.calories ?? 0,
-    protein: Math.round(macroRow?.protein ?? 0),
-    carbs: Math.round(macroRow?.carbs ?? 0),
-    fat: Math.round(macroRow?.fat ?? 0),
-    workoutsToday: workoutRow?.count ?? 0,
-  };
+  const user = await requireUser();
+  const [macros, workoutsToday] = await Promise.all([
+    getTodayMacros(user.id),
+    countTodayWorkouts(user.id),
+  ]);
+  return { ...macros, workoutsToday };
 }
