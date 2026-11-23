@@ -8,17 +8,28 @@ import { langfuseSpanProcessor } from '@/instrumentation';
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
-  const { messages }: { messages: UIMessage[] } = await req.json();
-
-  const mcpClient = await createMCPClient({
-    transport: {
-      type: 'http',
-      url: process.env.FITNESS_MCP_URL!,
-    },
-  });
+  let mcpClient: Awaited<ReturnType<typeof createMCPClient>> | undefined;
 
   try {
-    const allMcpTools = await mcpClient.tools();
+    const { messages }: { messages: UIMessage[] } = await req.json();
+    const fitnessMcpUrl = process.env.FITNESS_MCP_URL;
+
+    if (!fitnessMcpUrl) {
+      return Response.json(
+        { error: 'The fitness service is not configured.' },
+        { status: 500 },
+      );
+    }
+
+    const client = await createMCPClient({
+      transport: {
+        type: 'http',
+        url: fitnessMcpUrl,
+      },
+    });
+    mcpClient = client;
+
+    const allMcpTools = await client.tools();
 
     // Keep read-only lookup tools from MCP; replace direct write tools with HITL confirmation cards
     const { log_meal, log_workout, ...readOnlyFitnessTools } = allMcpTools;
@@ -74,14 +85,31 @@ export async function POST(req: Request) {
         functionId: 'valere-coach-agent',
       },
       onFinish: async () => {
-        await mcpClient.close();
+        await client.close();
         await langfuseSpanProcessor.forceFlush();
       },
     });
 
-    return result.toUIMessageStreamResponse();
+    return result.toUIMessageStreamResponse({
+      onError: (error) => {
+        console.error('Chat stream failed:', error);
+        return 'Unable to generate a response. Please try again.';
+      },
+    });
   } catch (error) {
-    await mcpClient.close();
-    throw error;
+    console.error('Chat request failed:', error);
+
+    if (mcpClient) {
+      try {
+        await mcpClient.close();
+      } catch (closeError) {
+        console.error('Failed to close the fitness service connection:', closeError);
+      }
+    }
+
+    return Response.json(
+      { error: 'Unable to start the chat. Please try again.' },
+      { status: 500 },
+    );
   }
 }

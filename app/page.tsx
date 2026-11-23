@@ -1,17 +1,47 @@
 'use client';
 
+import Image from 'next/image';
+import Link from 'next/link';
 import { useChat } from '@ai-sdk/react';
-import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
-import { useEffect, useState } from 'react';
-import { MealConfirmationCard, WorkoutConfirmationCard } from '@/components/ConfirmationCards';
-import { DailySummaryHeader, DailyStats } from '@/components/DailySummaryHeader';
+import { lastAssistantMessageIsCompleteWithToolCalls, type UIMessage } from 'ai';
+import { useEffect, useRef, useState } from 'react';
+import {
+  MealConfirmationCard,
+  WorkoutConfirmationCard,
+  type MealConfirmationData,
+  type WorkoutConfirmationData,
+} from '@/components/ConfirmationCards';
 import { getDailySummary } from '@/app/actions/fitness';
+import type { DailyStats } from '@/components/DailySummaryHeader';
+
+type ChatTools = {
+  confirm_meal_log: { input: MealConfirmationData; output: string };
+  confirm_workout_log: { input: WorkoutConfirmationData; output: string };
+};
+
+type ChatMessage = UIMessage<unknown, never, ChatTools>;
+
+const promptTopics = [
+  { label: 'Train', prompt: 'Help me plan or log a workout.' },
+  { label: 'Fuel', prompt: 'Help me log a meal and review my nutrition.' },
+  { label: 'Protocols', prompt: 'Help me review my training and recovery routine.' },
+  { label: 'Body', prompt: 'Summarize my recent workout progress.' },
+  { label: 'Labs', prompt: 'What should I ask my clinician about my lab results?' },
+];
+
+const suggestions = [
+  'I did ten pushups',
+  'I had two eggs and toast',
+  'Summarize my recent workouts',
+];
 
 export default function ChatPage() {
-  const { messages, sendMessage, addToolOutput, status } = useChat({
-    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
-  });
+  const { messages, sendMessage, addToolOutput, status, error, regenerate, clearError } =
+    useChat<ChatMessage>({
+      sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+    });
   const [input, setInput] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
   const [stats, setStats] = useState<DailyStats>({
     calories: 0,
     protein: 0,
@@ -26,120 +56,285 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
-    refreshStats();
+    let active = true;
+
+    getDailySummary()
+      .then((latest) => {
+        if (active) setStats(latest);
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to load daily summary:', error);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
+
+  const fillPrompt = (prompt: string) => {
+    setInput(prompt);
+    inputRef.current?.focus();
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    sendMessage({ text: input });
+    const message = input.trim();
+    if (!message || status !== 'ready') return;
+    sendMessage({ text: message });
     setInput('');
   };
 
+  const glanceStats = [
+    { label: 'Calories', value: stats.calories.toLocaleString(), detail: 'kcal logged today' },
+    { label: 'Protein', value: `${stats.protein} g`, detail: 'logged today' },
+    { label: 'Carbohydrates', value: `${stats.carbs} g`, detail: 'logged today' },
+    { label: 'Fat', value: `${stats.fat} g`, detail: 'logged today' },
+  ];
+
   return (
-    <div className="flex flex-col w-full max-w-xl py-8 mx-auto stretch px-4">
-      <h1 className="text-2xl font-bold mb-4">Valere — AI Fitness & Nutrition Coach</h1>
+    <div className="valere-page">
+      <header className="valere-nav">
+        <Link className="valere-brand" href="/" aria-label="Valere home">
+          <Image
+            src="/brand/wordmark-integrated-on-light.svg"
+            alt=""
+            aria-hidden="true"
+            width={112}
+            height={22}
+            className="valere-logo valere-logo-light"
+          />
+          <Image
+            src="/brand/wordmark-integrated-on-dark.svg"
+            alt=""
+            aria-hidden="true"
+            width={112}
+            height={22}
+            className="valere-logo valere-logo-dark"
+          />
+        </Link>
 
-      <DailySummaryHeader stats={stats} />
+        <nav aria-label="Prompt topics">
+          <ul className="valere-nav-links">
+            {promptTopics.map((topic) => (
+              <li key={topic.label}>
+                <button
+                  type="button"
+                  className="valere-nav-button"
+                  aria-label={`Write a prompt about ${topic.label.toLowerCase()}`}
+                  onClick={() => fillPrompt(topic.prompt)}
+                >
+                  {topic.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-      <div className="space-y-4 mb-24">
-        {messages.map((m) => (
-          <div key={m.id} className="p-4 rounded-lg border border-gray-200 dark:border-gray-800">
-            <div className="font-semibold text-xs uppercase tracking-wider text-gray-500 mb-1">
-              {m.role === 'user' ? 'You' : 'Valere'}
-            </div>
-            <div className="whitespace-pre-wrap text-sm">
-              {m.parts.map((part: any, i: number) => {
-                if (part.type === 'text') {
-                  return <span key={i}>{part.text}</span>;
-                }
+        <div className="valere-nav-right">
+          <div className="valere-avatar" aria-label="Valere AI coach">
+            V
+          </div>
+        </div>
+      </header>
 
-                if (part.type === 'tool-confirm_meal_log') {
-                  if (!part.input || part.state === 'input-streaming') {
-                    return (
-                      <div
-                        key={part.toolCallId}
-                        className="my-2 p-3 text-xs font-mono bg-blue-50/50 dark:bg-blue-950/20 rounded-xl border border-blue-500/30 text-blue-600 dark:text-blue-400"
-                      >
-                        Preparing meal confirmation card...
-                      </div>
-                    );
-                  }
+      <main
+        className={`valere-main ${messages.length > 0 ? 'valere-main-with-messages' : ''}`}
+      >
+        <h1 className="sr-only">Valere — AI fitness and nutrition coach</h1>
 
-                  return (
-                    <MealConfirmationCard
-                      key={part.toolCallId}
-                      toolCallId={part.toolCallId}
-                      initialData={part.input}
-                      onComplete={async (id, output) => {
-                        await refreshStats();
-                        addToolOutput({ tool: 'confirm_meal_log', toolCallId: id, output });
-                      }}
-                    />
-                  );
-                }
+        <section className="valere-hero" aria-label="Ask Valere">
+          {messages.length === 0 && (
+            <Image
+              src="/brand/wordmark-integrated-on-light.svg"
+              alt=""
+              aria-hidden="true"
+              width={280}
+              height={56}
+              fetchPriority="high"
+              className="valere-hero-logo valere-logo-light"
+            />
+          )}
+          {messages.length === 0 && (
+            <Image
+              src="/brand/wordmark-integrated-on-dark.svg"
+              alt=""
+              aria-hidden="true"
+              width={280}
+              height={56}
+              fetchPriority="high"
+              className="valere-hero-logo valere-logo-dark"
+            />
+          )}
 
-                if (part.type === 'tool-confirm_workout_log') {
-                  if (!part.input || part.state === 'input-streaming') {
-                    return (
-                      <div
-                        key={part.toolCallId}
-                        className="my-2 p-3 text-xs font-mono bg-purple-50/50 dark:bg-purple-950/20 rounded-xl border border-purple-500/30 text-purple-600 dark:text-purple-400"
-                      >
-                        Preparing workout confirmation card...
-                      </div>
-                    );
-                  }
+          <form className="valere-ask" onSubmit={handleSubmit}>
+            <input
+              ref={inputRef}
+              id="chat-input"
+              className="valere-ask-input"
+              value={input}
+              placeholder="Ask about your training, food, or recovery"
+              aria-label="Ask Valere"
+              autoComplete="off"
+              onChange={(e) => setInput(e.target.value)}
+              disabled={status !== 'ready'}
+            />
+            <button
+              className="valere-send"
+              type="submit"
+              aria-label="Send message"
+              disabled={status !== 'ready' || !input.trim()}
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.85"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 19V5" />
+                <path d="M5 12l7-7 7 7" />
+              </svg>
+            </button>
+          </form>
 
-                  return (
-                    <WorkoutConfirmationCard
-                      key={part.toolCallId}
-                      toolCallId={part.toolCallId}
-                      initialData={part.input}
-                      onComplete={async (id, output) => {
-                        await refreshStats();
-                        addToolOutput({ tool: 'confirm_workout_log', toolCallId: id, output });
-                      }}
-                    />
-                  );
-                }
+          <div className="valere-chips" aria-label="Suggested prompts">
+            {suggestions.map((suggestion) => (
+              <button
+                key={suggestion}
+                className="valere-chip"
+                type="button"
+                disabled={status !== 'ready'}
+                onClick={() => fillPrompt(suggestion)}
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </section>
 
-                if (part.type.startsWith('tool-')) {
-                  return (
-                    <div
-                      key={i}
-                      className="my-2 p-2 text-xs font-mono bg-gray-100 dark:bg-gray-900 rounded text-blue-600 dark:text-blue-400"
-                    >
-                      ⚙ Calling tool: {part.type.replace('tool-', '')}...
-                    </div>
-                  );
-                }
+        {messages.length > 0 && (
+          <section className="valere-conversation" aria-label="Conversation" aria-live="polite">
+            {messages.map((message) => (
+              <article
+                key={message.id}
+                className={`valere-message ${
+                  message.role === 'user' ? 'valere-user-message' : 'valere-assistant-message'
+                }`}
+              >
+                <div className="valere-message-role">
+                  {message.role === 'user' ? 'You' : 'Valere'}
+                </div>
+                <div className="valere-message-content">
+                  {message.parts.map((part, i) => {
+                    if (part.type === 'text') {
+                      return <span key={i}>{part.text}</span>;
+                    }
 
-                return null;
-              })}
+                    if (part.type === 'tool-confirm_meal_log') {
+                      if (!part.input || part.state === 'input-streaming') {
+                        return (
+                          <div key={part.toolCallId} className="valere-tool-loading">
+                            Preparing meal confirmation...
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <MealConfirmationCard
+                          key={part.toolCallId}
+                          toolCallId={part.toolCallId}
+                          initialData={part.input}
+                          onComplete={async (id, output) => {
+                            await refreshStats();
+                            addToolOutput({ tool: 'confirm_meal_log', toolCallId: id, output });
+                          }}
+                        />
+                      );
+                    }
+
+                    if (part.type === 'tool-confirm_workout_log') {
+                      if (!part.input || part.state === 'input-streaming') {
+                        return (
+                          <div key={part.toolCallId} className="valere-tool-loading">
+                            Preparing workout confirmation...
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <WorkoutConfirmationCard
+                          key={part.toolCallId}
+                          toolCallId={part.toolCallId}
+                          initialData={part.input}
+                          onComplete={async (id, output) => {
+                            await refreshStats();
+                            addToolOutput({ tool: 'confirm_workout_log', toolCallId: id, output });
+                          }}
+                        />
+                      );
+                    }
+
+                    if (part.type.startsWith('tool-')) {
+                      return (
+                        <div key={i} className="valere-tool-loading">
+                          Preparing {part.type.replace('tool-', '')}...
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  })}
+                </div>
+              </article>
+            ))}
+          </section>
+        )}
+
+        {error && (
+          <div className="valere-error" role="alert">
+            <p>Valere couldn&apos;t respond. Please try again.</p>
+            <div className="valere-error-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  clearError();
+                  regenerate();
+                }}
+              >
+                Retry
+              </button>
+              <button type="button" onClick={clearError}>
+                Dismiss
+              </button>
             </div>
           </div>
-        ))}
-      </div>
+        )}
 
-      <form
-        onSubmit={handleSubmit}
-        className="fixed bottom-0 left-0 right-0 max-w-xl mx-auto p-4 bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 flex gap-2"
-      >
-        <input
-          className="flex-1 p-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-transparent text-sm"
-          value={input}
-          placeholder="Log a meal or workout (e.g., 'I had 2 eggs and toast' or '3x10 squats at 135 lbs')..."
-          onChange={(e) => setInput(e.target.value)}
-        />
-        <button
-          type="submit"
-          disabled={status !== 'ready'}
-          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg disabled:opacity-50"
-        >
-          Send
-        </button>
-      </form>
+        <section className="valere-glance" aria-label="Today at a glance">
+          <div className="valere-glance-heading">
+            <h2>Today at a glance</h2>
+            <span>
+              {stats.workoutsToday} {stats.workoutsToday === 1 ? 'workout' : 'workouts'} logged
+            </span>
+          </div>
+          {glanceStats.map((stat) => (
+            <article key={stat.label} className="valere-card">
+              <div className="valere-card-label">{stat.label}</div>
+              <div className="valere-card-value">{stat.value}</div>
+              <div className="valere-card-meta">{stat.detail}</div>
+            </article>
+          ))}
+        </section>
+      </main>
+
+      <footer className="valere-footer">
+        <span>Valere</span>
+        <span className="valere-footer-note">Fitness, nutrition, and recovery support</span>
+      </footer>
     </div>
   );
 }

@@ -24,3 +24,538 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.valere-page {
+  --page-bg: #f5f2ec;
+  --surface: #fff;
+  --elevated: #fbf9f5;
+  --separator: #e2ddd3;
+  --text: #142024;
+  --text-secondary: #4e5c60;
+  --text-muted: #5f6a6d;
+  --accent: #1d6e62;
+  --accent-contrast: #fff;
+  --glow: rgb(29 110 98 / 10%);
+  --shadow: 0 1px 2px rgb(20 32 36 / 4%), 0 10px 28px rgb(20 32 36 / 5%);
+  --chip-bg: rgb(255 255 255 / 72%);
+  --nav-rule: rgb(20 32 36 / 8%);
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 42%, var(--glow), transparent 70%),
+    var(--page-bg);
+  font-family: var(--font-geist-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.valere-nav {
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  padding: 0 40px;
+  border-bottom: 1px solid var(--nav-rule);
+}
+
+.valere-brand {
+  justify-self: start;
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+.valere-logo {
+  display: block;
+  width: auto;
+  height: 22px;
+}
+
+.valere-logo-dark {
+  display: none;
+}
+
+.valere-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.valere-nav-button {
+  padding: 8px 0;
+  border: 0;
+  color: var(--text-secondary);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.valere-nav-button:hover {
+  color: var(--text);
+}
+
+.valere-nav-right {
+  justify-self: end;
+}
+
+.valere-avatar {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--separator);
+  border-radius: 50%;
+  color: var(--accent);
+  background: var(--elevated);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.valere-main {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 56px 32px;
+}
+
+.valere-main-with-messages {
+  justify-content: flex-start;
+}
+
+.valere-hero {
+  width: min(100%, 760px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.valere-hero-logo {
+  display: block;
+  width: auto;
+  height: 56px;
+  margin-bottom: 32px;
+}
+
+.valere-ask {
+  width: 100%;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 24px;
+  border: 1px solid var(--separator);
+  border-radius: 32px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.valere-ask:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--glow), var(--shadow);
+}
+
+.valere-ask-input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  color: var(--text);
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+}
+
+.valere-ask-input::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+.valere-send {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--accent-contrast);
+  background: var(--accent);
+  cursor: pointer;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.valere-send:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.valere-send:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.valere-chips {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.valere-chip {
+  min-height: 34px;
+  padding: 6px 14px;
+  border: 1px solid var(--separator);
+  border-radius: 18px;
+  color: var(--text-secondary);
+  background: var(--chip-bg);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background-color 150ms ease;
+}
+
+.valere-chip:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.valere-chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.valere-conversation {
+  width: min(100%, 760px);
+  display: grid;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.valere-message {
+  min-width: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--separator);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.valere-user-message {
+  justify-self: end;
+  max-width: 88%;
+  border-color: transparent;
+  background: var(--elevated);
+}
+
+.valere-assistant-message {
+  width: 100%;
+}
+
+.valere-message-role {
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.valere-message-content {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.valere-tool-loading {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--separator);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  background: var(--elevated);
+  font-size: 12px;
+}
+
+.valere-error {
+  width: min(100%, 760px);
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid #d88a83;
+  border-radius: 12px;
+  color: #842d27;
+  background: #fff3f1;
+  font-size: 14px;
+}
+
+.valere-error-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.valere-error-actions button {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.valere-glance {
+  width: min(100%, 1080px);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 48px;
+}
+
+.valere-glance-heading {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.valere-glance-heading h2 {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.valere-card {
+  min-width: 0;
+  padding: 16px 18px 18px;
+  border: 1px solid var(--separator);
+  border-radius: 16px;
+  background: var(--surface);
+  transition:
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.valere-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--separator));
+}
+
+.valere-card-label {
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.valere-card-value {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.valere-card-meta {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.valere-footer {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 40px;
+  border-top: 1px solid var(--nav-rule);
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.valere-footer-note {
+  text-align: right;
+}
+
+.valere-nav-button:focus-visible,
+.valere-chip:focus-visible,
+.valere-send:focus-visible,
+.valere-error-actions button:focus-visible,
+.valere-brand:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .valere-page {
+    --page-bg: #0e1315;
+    --surface: #151c1f;
+    --elevated: #1d2629;
+    --separator: #2b373b;
+    --text: #ecefec;
+    --text-secondary: #a9b4b1;
+    --text-muted: #86928f;
+    --accent: #6cc4b3;
+    --accent-contrast: #06201b;
+    --glow: rgb(108 196 179 / 8%);
+    --shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 12px 32px rgb(0 0 0 / 28%);
+    --chip-bg: rgb(21 28 31 / 80%);
+    --nav-rule: rgb(236 239 236 / 8%);
+  }
+
+  .valere-logo-light {
+    display: none;
+  }
+
+  .valere-logo-dark {
+    display: block;
+  }
+
+  .valere-error {
+    border-color: #783f3a;
+    color: #ffd5d1;
+    background: #2b1918;
+  }
+}
+
+@media (max-width: 800px) {
+  .valere-nav {
+    padding: 0 24px;
+  }
+
+  .valere-nav-links {
+    gap: 18px;
+  }
+
+  .valere-main {
+    padding-right: 32px;
+    padding-left: 32px;
+  }
+
+  .valere-glance {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .valere-nav {
+    min-height: 64px;
+    grid-template-columns: 1fr auto;
+    padding: 0 20px;
+  }
+
+  .valere-nav nav {
+    display: none;
+  }
+
+  .valere-main {
+    padding: 36px 20px 28px;
+  }
+
+  .valere-main-with-messages {
+    justify-content: flex-start;
+  }
+
+  .valere-hero-logo {
+    height: 46px;
+    margin-bottom: 26px;
+  }
+
+  .valere-ask {
+    height: 58px;
+    gap: 8px;
+    padding: 6px 6px 6px 16px;
+  }
+
+  .valere-ask-input {
+    font-size: 14px;
+  }
+
+  .valere-send {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+  }
+
+  .valere-chips {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 2px 2px 6px;
+    scrollbar-width: none;
+  }
+
+  .valere-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .valere-chip {
+    flex: 0 0 auto;
+  }
+
+  .valere-glance {
+    gap: 10px;
+    margin-top: 34px;
+  }
+
+  .valere-card {
+    padding: 14px;
+  }
+
+  .valere-footer {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+}
+
+@media (max-width: 380px) {
+  .valere-main {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .valere-glance {
+    grid-template-columns: 1fr;
+  }
+
+  .valere-glance-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

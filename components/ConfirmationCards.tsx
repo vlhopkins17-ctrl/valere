@@ -3,20 +3,31 @@
 import { useState } from 'react';
 import { saveConfirmedMeal, saveConfirmedWorkout } from '@/app/actions/fitness';
 
+export type MealConfirmationData = {
+  foodName: string;
+  calories: number;
+  proteinGrams: number;
+  carbsGrams: number;
+  fatGrams: number;
+  mealType?: string;
+};
+
+export type WorkoutConfirmationData = {
+  exercise: string;
+  sets: number;
+  reps: number;
+  weightLbs?: number;
+  durationMinutes?: number;
+  notes?: string;
+};
+
 export function MealConfirmationCard({
   toolCallId,
   initialData,
   onComplete,
 }: {
   toolCallId: string;
-  initialData?: {
-    foodName: string;
-    calories: number;
-    proteinGrams: number;
-    carbsGrams: number;
-    fatGrams: number;
-    mealType?: string;
-  };
+  initialData?: MealConfirmationData;
   onComplete: (toolCallId: string, output: string) => void;
 }) {
   const [form, setForm] = useState({
@@ -159,14 +170,7 @@ export function WorkoutConfirmationCard({
   onComplete,
 }: {
   toolCallId: string;
-  initialData?: {
-    exercise: string;
-    sets: number;
-    reps: number;
-    weightLbs?: number;
-    durationMinutes?: number;
-    notes?: string;
-  };
+  initialData?: WorkoutConfirmationData;
   onComplete: (toolCallId: string, output: string) => void;
 }) {
   const [form, setForm] = useState({
