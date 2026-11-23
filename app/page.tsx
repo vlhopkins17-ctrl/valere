@@ -42,6 +42,8 @@ export default function ChatPage() {
     });
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const conversationRef = useRef<HTMLElement>(null);
+  const shouldAutoScrollRef = useRef(true);
   const [stats, setStats] = useState<DailyStats>({
     calories: 0,
     protein: 0,
@@ -71,6 +73,16 @@ export default function ChatPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const conversation = conversationRef.current;
+    if (!conversation || !shouldAutoScrollRef.current) return;
+
+    conversation.scrollTo({
+      top: conversation.scrollHeight,
+      behavior: status === 'streaming' ? 'auto' : 'smooth',
+    });
+  }, [error, messages, status]);
+
   const fillPrompt = (prompt: string) => {
     setInput(prompt);
     inputRef.current?.focus();
@@ -80,6 +92,7 @@ export default function ChatPage() {
     e.preventDefault();
     const message = input.trim();
     if (!message || status !== 'ready') return;
+    shouldAutoScrollRef.current = true;
     sendMessage({ text: message });
     setInput('');
   };
@@ -217,7 +230,19 @@ export default function ChatPage() {
         </section>
 
         {messages.length > 0 && (
-          <section className="valere-conversation" aria-label="Conversation" aria-live="polite">
+          <section
+            ref={conversationRef}
+            className="valere-conversation"
+            aria-label="Conversation"
+            aria-live="polite"
+            tabIndex={0}
+            onScroll={() => {
+              const conversation = conversationRef.current;
+              if (!conversation) return;
+              shouldAutoScrollRef.current =
+                conversation.scrollHeight - conversation.scrollTop - conversation.clientHeight < 64;
+            }}
+          >
             {messages.map((message) => (
               <article
                 key={message.id}
@@ -291,27 +316,27 @@ export default function ChatPage() {
                 </div>
               </article>
             ))}
+            {error && (
+              <div className="valere-error" role="alert">
+                <p>Valere couldn&apos;t respond. Please try again.</p>
+                <div className="valere-error-actions">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      shouldAutoScrollRef.current = true;
+                      clearError();
+                      regenerate();
+                    }}
+                  >
+                    Retry
+                  </button>
+                  <button type="button" onClick={clearError}>
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            )}
           </section>
-        )}
-
-        {error && (
-          <div className="valere-error" role="alert">
-            <p>Valere couldn&apos;t respond. Please try again.</p>
-            <div className="valere-error-actions">
-              <button
-                type="button"
-                onClick={() => {
-                  clearError();
-                  regenerate();
-                }}
-              >
-                Retry
-              </button>
-              <button type="button" onClick={clearError}>
-                Dismiss
-              </button>
-            </div>
-          </div>
         )}
 
         <section className="valere-glance" aria-label="Today at a glance">
