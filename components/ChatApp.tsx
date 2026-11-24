@@ -184,6 +184,7 @@ export default function ChatApp({ userEmail }: { userEmail: string }) {
               className="valere-hero-logo valere-logo-dark"
             />
           )}
+          {messages.length === 0 && <p className="valere-tagline">Be well. Be strong.</p>}
 
           <form className="valere-ask" onSubmit={handleSubmit}>
             <input

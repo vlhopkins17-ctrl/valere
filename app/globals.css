@@ -39,6 +39,7 @@ body {
   --shadow: 0 1px 2px rgb(20 32 36 / 4%), 0 10px 28px rgb(20 32 36 / 5%);
   --chip-bg: rgb(255 255 255 / 72%);
   --nav-rule: rgb(20 32 36 / 8%);
+  --brand-gold: #806629; /* matches the dot in the light wordmark */
 
   min-height: 100vh;
   min-height: 100dvh;
@@ -149,7 +150,17 @@ body {
   display: block;
   width: auto;
   height: 56px;
-  margin-bottom: 32px;
+  margin-bottom: 12px;
+}
+
+.valere-tagline {
+  margin: 0 0 32px;
+  color: var(--brand-gold);
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-align: center;
 }
 
 .valere-ask {
@@ -443,6 +454,7 @@ body {
     --shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 12px 32px rgb(0 0 0 / 28%);
     --chip-bg: rgb(21 28 31 / 80%);
     --nav-rule: rgb(236 239 236 / 8%);
+    --brand-gold: #d4b978; /* matches the dot in the dark wordmark */
   }
 
   .valere-logo-light {
@@ -500,7 +512,12 @@ body {
 
   .valere-hero-logo {
     height: 46px;
+    margin-bottom: 10px;
+  }
+
+  .valere-tagline {
     margin-bottom: 26px;
+    font-size: 14px;
   }
 
   .valere-ask {
@@ -586,7 +603,12 @@ body {
 .valere-auth-logo {
   width: auto;
   height: 34px;
+  margin-bottom: 8px;
+}
+
+.valere-auth .valere-tagline {
   margin-bottom: 20px;
+  font-size: 14px;
 }
 
 .valere-auth-title {

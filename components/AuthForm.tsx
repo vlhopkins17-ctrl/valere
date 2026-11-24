@@ -55,6 +55,7 @@ export function AuthForm({ mode, action }: AuthFormProps) {
             height={34}
             className="valere-auth-logo valere-logo-dark"
           />
+          <p className="valere-tagline">Be well. Be strong.</p>
           <h1 id="auth-title" className="valere-auth-title">
             {text.title}
           </h1>
