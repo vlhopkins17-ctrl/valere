@@ -541,9 +541,9 @@ body {
     justify-content: flex-start;
   }
 
+  /* The nav already shows the wordmark on small screens. */
   .valere-hero-logo {
-    height: 46px;
-    margin-bottom: 10px;
+    display: none;
   }
 
   .valere-tagline {
