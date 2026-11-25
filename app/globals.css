@@ -299,6 +299,37 @@ body {
   text-transform: uppercase;
 }
 
+.valere-connecting {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 2px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.valere-connecting-spinner {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  border: 2px solid var(--separator);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: valere-spin 800ms linear infinite;
+}
+
+@keyframes valere-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .valere-connecting-spinner {
+    animation: none;
+  }
+}
+
 .valere-message-content {
   overflow-wrap: anywhere;
   color: var(--text);

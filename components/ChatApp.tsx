@@ -323,6 +323,12 @@ export default function ChatApp({ userEmail }: { userEmail: string }) {
                 </div>
               </article>
             ))}
+            {status === 'submitted' && (
+              <div className="valere-connecting" role="status">
+                <span className="valere-connecting-spinner" aria-hidden="true" />
+                Connecting to Valere...
+              </div>
+            )}
             {error && (
               <div className="valere-error" role="alert">
                 <p>Valere couldn&apos;t respond. Please try again.</p>
